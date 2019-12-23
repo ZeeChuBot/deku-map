@@ -13,6 +13,8 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 const DATA_URL =
   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/icon/meteorites.json'; // eslint-disable-line
 
+const DATA_URL2 = 'http://localhost:8080/something2.json';
+
 const INITIAL_VIEW_STATE = {
   longitude: -35,
   latitude: 36.7,
@@ -68,16 +70,15 @@ export default class App extends Component {
   _renderhoveredItems() {
     const {x, y, hoveredObject, expandedObjects} = this.state;
 
+
     if (expandedObjects) {
       return (
-        <div className="tooltip interactive" style={{left: x, top: y}}>
-          {expandedObjects.map(({name, year, mass, class: meteorClass}) => {
+        <div key="wat" className="tooltip interactive" style={{left: x, top: y}}>
+          {expandedObjects.map(({id, properties}) => {
             return (
-              <div key={name}>
-                <h5>{name}</h5>
-                <div>Year: {year || 'unknown'}</div>
-                <div>Class: {meteorClass}</div>
-                <div>Mass: {mass}g</div>
+              <div key={id}>
+                <h5>{id}</h5>
+                <div>Topics: {properties.tag.topic.join(', ')}</div>
               </div>
             );
           })}
@@ -94,9 +95,9 @@ export default class App extends Component {
         <h5>{hoveredObject.point_count} records</h5>
       </div>
     ) : (
-      <div className="tooltip" style={{left: x, top: y}}>
+      <div key={hoveredObject.id} className="tooltip" style={{left: x, top: y}}>
         <h5>
-          {hoveredObject.name} {hoveredObject.year ? `(${hoveredObject.year})` : ''}
+          {hoveredObject.id} : {hoveredObject.properties.tag.topic.join(', ')}
         </h5>
       </div>
     );
@@ -104,7 +105,7 @@ export default class App extends Component {
 
   _renderLayers() {
     const {
-      data = DATA_URL,
+      data = DATA_URL2,
       iconMapping = 'data/location-icon-mapping.json',
       iconAtlas = 'data/location-icon-atlas.png',
       showCluster = true
@@ -114,7 +115,7 @@ export default class App extends Component {
       data,
       pickable: true,
       wrapLongitude: true,
-      getPosition: d => d.coordinates,
+      getPosition: d => d.geometry.coordinates,
       iconAtlas,
       iconMapping,
       onHover: this._onHover
@@ -146,6 +147,7 @@ export default class App extends Component {
         onClick={this._onClick}
       >
         <StaticMap
+          key="deku-map"
           reuseMaps
           mapStyle={mapStyle}
           preventStyleDiffing={true}
