@@ -5,15 +5,12 @@ import DeckGL from '@deck.gl/react';
 import {IconLayer} from '@deck.gl/layers';
 
 import IconClusterLayer from './icon-cluster-layer';
+import { loadEvents } from './api/EventApi';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 
-// Source data CSV
-const DATA_URL =
-  'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/icon/meteorites.json'; // eslint-disable-line
-
-const DATA_URL2 = 'http://localhost:8080/something2.json';
+const DATA_URL = loadEvents();
 
 const INITIAL_VIEW_STATE = {
   longitude: -35,
@@ -105,7 +102,7 @@ export default class App extends Component {
 
   _renderLayers() {
     const {
-      data = DATA_URL2,
+      data = DATA_URL,
       iconMapping = 'data/location-icon-mapping.json',
       iconAtlas = 'data/location-icon-atlas.png',
       showCluster = true

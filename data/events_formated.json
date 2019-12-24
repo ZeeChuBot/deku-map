@@ -1,4 +1,47 @@
-[
+{
+  "totalItems": 26472,
+  "limit": 10000,
+  "searchAfter": [
+    1576119827648,
+    "75c84c58-552b-57a1-b04e-579459664a19"
+  ],
+  "count": 10000,
+  "restrictions": {
+    "region": [],
+    "type": [
+      "radio frequency",
+      "correlation",
+      "narrative",
+      "imagery",
+      "collection",
+      "site proximate",
+      "signal",
+      "beta",
+      "platform"
+    ],
+    "topic": [
+      "test",
+      "issue_activity",
+      "supply chain",
+      "military non-conflict",
+      "outlier",
+      "collection",
+      "issue activity",
+      "disaster",
+      "radio wave",
+      "refugee",
+      "outbreak",
+      "change detection",
+      "maritime",
+      "energy",
+      "conflict"
+    ],
+    "context": [
+      "twitter",
+      "groundPhotos"
+    ]
+  },
+  "items": [
     {
       "geometry": {
         "coordinates": [
@@ -169997,6 +170040,7 @@
             "energy"
           ]
         }
+      }
     }
-  }
-]
+  ]
+}
