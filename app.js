@@ -7,6 +7,8 @@ import {IconLayer} from '@deck.gl/layers';
 import IconClusterLayer from './icon-cluster-layer';
 import { loadEvents, groupByTopic } from './api/EventApi';
 import HoverPopup from './components/HoverPopup';
+import { uniqueId } from 'lodash';
+import DetailsPopover from './components/DetailsPopover';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -45,9 +47,7 @@ export default class App extends Component {
       return;
     }
 
-    console.log('info', info);
-
-
+    // console.log('info', info);
     const {x, y, object, objects} = info;
     this.setState({x, y, hoveredObject: object, raw: objects});
   }
@@ -74,26 +74,14 @@ export default class App extends Component {
 
 
     if (expandedObjects) {
-      return (
-        <div key="wat" className="tooltip interactive" style={{left: x, top: y}}>
-          {expandedObjects.map(({id, properties}) => {
-            return (
-              <div key={id}>
-                <h5>{id}</h5>
-                <div>Topics: {properties.tag.topic.join(', ')}</div>
-              </div>
-            );
-          })}
-        </div>
-      );
+      return <DetailsPopover key={uniqueId()} x={x} y={y} events={expandedObjects} />
     }
 
     if (!hoveredObject) {
       return null;
     }
-
     return hoveredObject.cluster ?
-      raw && <HoverPopup clusterInfo={hoveredObject} x={x} y={y} events={raw} />
+      raw && <HoverPopup key={hoveredObject.cluster_id} clusterInfo={hoveredObject} x={x} y={y} events={raw} />
        : (
       <div key={hoveredObject.id} className="tooltip" style={{left: x, top: y}}>
         <h5>
