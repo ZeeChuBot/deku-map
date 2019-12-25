@@ -39,7 +39,7 @@ export type Event = {
   id: UUID;
   properties: {
     tag: {
-      topic: EventTopic;
+      topic: EventTopic[];
     }
   }
 }
@@ -64,3 +64,17 @@ export const loadEvents = () => {
   return axios.get<EventApiResult>('data/events.json').then(response => response.data.items);
 }
 
+export const groupByTopic = (events: Event[]) => {
+  let eventByTopics = {} as  Record<EventTopic, Event[]>;
+
+  events.forEach(event => {
+    event.properties.tag.topic.forEach(topic => {
+      if (!eventByTopics[topic]) {
+        eventByTopics[topic] = [];
+      }
+      eventByTopics[topic].push(event);
+    })
+  });
+
+  return eventByTopics;
+}

@@ -50,9 +50,10 @@ export default class IconClusterLayer extends CompositeLayer {
   getPickingInfo({info, mode}) {
     const pickedObject = info.object && info.object.properties;
     if (pickedObject) {
-      if (pickedObject.cluster && mode !== 'hover') {
+      if (pickedObject.cluster) {
+      // if (pickedObject.cluster && mode !== 'hover') {
         info.objects = this.state.index
-          .getLeaves(pickedObject.cluster_id, 25)
+          .getLeaves(pickedObject.cluster_id, Infinity )
           .map(f => f.properties);
       }
       info.object = pickedObject;

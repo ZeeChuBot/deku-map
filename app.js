@@ -5,7 +5,8 @@ import DeckGL from '@deck.gl/react';
 import {IconLayer} from '@deck.gl/layers';
 
 import IconClusterLayer from './icon-cluster-layer';
-import { loadEvents } from './api/EventApi';
+import { loadEvents, groupByTopic } from './api/EventApi';
+import HoverPopup from './components/HoverPopup';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -30,7 +31,8 @@ export default class App extends Component {
       x: 0,
       y: 0,
       hoveredObject: null,
-      expandedObjects: null
+      expandedObjects: null,
+      raw: null
     };
     this._onHover = this._onHover.bind(this);
     this._onClick = this._onClick.bind(this);
@@ -43,8 +45,11 @@ export default class App extends Component {
       return;
     }
 
-    const {x, y, object} = info;
-    this.setState({x, y, hoveredObject: object});
+    console.log('info', info);
+
+
+    const {x, y, object, objects} = info;
+    this.setState({x, y, hoveredObject: object, raw: objects});
   }
 
   _onClick(info) {
@@ -65,7 +70,7 @@ export default class App extends Component {
   }
 
   _renderhoveredItems() {
-    const {x, y, hoveredObject, expandedObjects} = this.state;
+    const {x, y, hoveredObject, expandedObjects, raw} = this.state;
 
 
     if (expandedObjects) {
@@ -87,11 +92,9 @@ export default class App extends Component {
       return null;
     }
 
-    return hoveredObject.cluster ? (
-      <div className="tooltip" style={{left: x, top: y}}>
-        <h5>{hoveredObject.point_count} records</h5>
-      </div>
-    ) : (
+    return hoveredObject.cluster ?
+      raw && <HoverPopup clusterInfo={hoveredObject} x={x} y={y} events={raw} />
+       : (
       <div key={hoveredObject.id} className="tooltip" style={{left: x, top: y}}>
         <h5>
           {hoveredObject.id} : {hoveredObject.properties.tag.topic.join(', ')}
