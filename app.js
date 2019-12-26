@@ -9,6 +9,7 @@ import { loadEvents, groupByTopic } from './api/EventApi';
 import HoverPopup from './components/HoverPopup';
 import { uniqueId } from 'lodash';
 import DetailsPopover from './components/DetailsPopover';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
