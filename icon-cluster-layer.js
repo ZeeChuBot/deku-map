@@ -1,18 +1,39 @@
 import {CompositeLayer} from '@deck.gl/core';
 import {IconLayer} from '@deck.gl/layers';
 import Supercluster from 'supercluster';
+import { get } from 'lodash';
 
-function getIconName(size) {
-  if (size === 0) {
+function getIconName(geoJsonFeature) {
+  if(geoJsonFeature.properties.cluster) {
+    return getClusterIconName(geoJsonFeature.properties.point_count);
+  } else {
+    return getEventIconName(geoJsonFeature.properties);
+  }
+}
+function getClusterIconName(size) {
+  if (size <= 1) {
     return '';
   }
   if (size < 10) {
     return `marker-${size}`;
   }
-  if (size < 100) {
-    return `marker-${Math.floor(size / 10)}0`;
+  if (size < 25) {
+    return 'marker-10';
   }
-  return 'marker-100';
+  if (size < 100) {
+    return `marker-${Math.floor(size / 25)*25}`;
+  }
+  if (size < 250) {
+    return 'marker-100';
+  }
+  if (size < 1000) {
+    return `marker-${Math.floor(size / 250)*250}`;
+  }
+  return 'marker-1000';
+}
+
+function getEventIconName(event) {
+  return get(event, 'properties.tag.topic[0]', 'test');
 }
 
 function getIconSize(size) {
@@ -28,7 +49,7 @@ export default class IconClusterLayer extends CompositeLayer {
     const rebuildIndex = changeFlags.dataChanged || props.sizeScale !== oldProps.sizeScale;
 
     if (rebuildIndex) {
-      const index = new Supercluster({maxZoom: 20, radius: props.sizeScale});
+      const index = new Supercluster({minZoom: 0, maxZoom: 20, radius: props.sizeScale});
       index.load(
         props.data.map(d => ({
           geometry: {coordinates: props.getPosition(d)},
@@ -85,7 +106,7 @@ export default class IconClusterLayer extends CompositeLayer {
         iconMapping,
         sizeScale,
         getPosition: d => d.geometry.coordinates,
-        getIcon: d => getIconName(d.properties.cluster ? d.properties.point_count : 1),
+        getIcon: d => getIconName(d),
         getSize: d => getIconSize(d.properties.cluster ? d.properties.point_count : 1)
       })
     );

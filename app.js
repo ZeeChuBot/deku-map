@@ -87,8 +87,8 @@ export default class App extends Component {
   _renderLayers() {
     const {
       data = DATA_URL,
-      iconMapping = 'data/location-icon-mapping.json',
-      iconAtlas = 'data/location-icon-atlas.png',
+      iconMapping = 'data/deku-icon-mapping.json',
+      iconAtlas = 'data/deku-icon-atlas.png',
       showCluster = true
     } = this.props;
 
@@ -117,7 +117,7 @@ export default class App extends Component {
   }
 
   render() {
-    const {mapStyle = 'mapbox://styles/mapbox/dark-v9'} = this.props;
+    const {mapStyle = 'mapbox://styles/mapbox/light-v10'} = this.props;
 
     return (
       <>
