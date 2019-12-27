@@ -47,18 +47,30 @@ export default class IconClusterLayer extends CompositeLayer {
     }
   }
 
-  getPickingInfo({info, mode}) {
-    const pickedObject = info.object && info.object.properties;
-    if (pickedObject) {
-      if (pickedObject.cluster) {
-      // if (pickedObject.cluster && mode !== 'hover') {
-        info.objects = this.state.index
-          .getLeaves(pickedObject.cluster_id, Infinity )
+  getPickingInfo({info}) {
+    const {object: geoJsonFeature} = info;
+    let clusterInfo, clusterEvents, event;
+
+    //ug... need stronger types for object
+    if(geoJsonFeature && geoJsonFeature.properties) {
+      if(geoJsonFeature.properties.cluster){
+        clusterInfo = geoJsonFeature.properties;
+        clusterEvents = this.state.index
+          .getLeaves(clusterInfo.cluster_id, Infinity )
           .map(f => f.properties);
+      } else {
+        event = geoJsonFeature.properties;
       }
-      info.object = pickedObject;
     }
-    return info;
+
+    return {
+      ...info,
+      object: {
+        clusterInfo,
+        clusterEvents,
+        event
+      }
+    }
   }
 
   renderLayers() {

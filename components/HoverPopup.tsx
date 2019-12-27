@@ -13,16 +13,33 @@ type ClusterInfo = {
   point_count_abbreviated: number;
 };
 
-const HoverPopup: React.FC<{
-  clusterInfo: ClusterInfo;
-  x: number;
-  y: number;
-  events: Event[];
-}> = ({ clusterInfo, x, y, events }) => {
-  const eventsByTopic = groupByTopic(events);
-
+const PointHoverInfo: React.FC<{
+  event: Event;
+}> = ({ event }) => {
   return (
-    <Card inverse color="dark" className="w-25" style={{ left: x, top: y }}>
+    <>
+      <CardHeader>
+        <span className="font-weight-bold">ID:</span> {event.id}
+      </CardHeader>
+      <CardBody>
+        {map(event.properties.tag.topic, topic => (
+          <div key={`${event.id}-${topic}`}>
+            <TopicIcon topic={topic} />
+            <span className="mx-1">{topic}</span>
+          </div>
+        ))}
+      </CardBody>
+    </>
+  );
+};
+
+const ClusterHoverInfo: React.FC<{
+  clusterInfo: ClusterInfo;
+  events: Event[];
+}> = ({ clusterInfo, events }) => {
+  const eventsByTopic = groupByTopic(events);
+  return (
+    <>
       <CardHeader>
         <h5>{clusterInfo.point_count} events</h5>
         <CardSubtitle className="font-italic">
@@ -39,6 +56,23 @@ const HoverPopup: React.FC<{
           </div>
         ))}
       </CardBody>
+    </>
+  );
+};
+
+const HoverPopup: React.FC<{
+  x: number;
+  y: number;
+  event?: Event;
+  events?: Event[];
+  clusterInfo?: ClusterInfo;
+}> = ({ x, y, event, events, clusterInfo }) => {
+  return (
+    <Card inverse color="dark" className="w-25" style={{ left: x, top: y }}>
+      {event && <PointHoverInfo event={event} />}
+      {clusterInfo && events && (
+        <ClusterHoverInfo clusterInfo={clusterInfo} events={events} />
+      )}
     </Card>
   );
 };

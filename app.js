@@ -3,12 +3,13 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {IconLayer} from '@deck.gl/layers';
+import { MapView } from '@deck.gl/core';
 
 import IconClusterLayer from './icon-cluster-layer';
-import { loadEvents, groupByTopic } from './api/EventApi';
+import { loadEvents } from './api/EventApi';
 import HoverPopup from './components/HoverPopup';
 import { uniqueId } from 'lodash';
-import DetailsPopover from './components/DetailsPopover';
+import DetailsPanel, { DETAILS_PANEL_WIDTH } from './components/DetailsPanel';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Set your mapbox token here
@@ -34,8 +35,7 @@ export default class App extends Component {
       x: 0,
       y: 0,
       hoveredObject: null,
-      expandedObjects: null,
-      raw: null
+      expandedObjects: null
     };
     this._onHover = this._onHover.bind(this);
     this._onClick = this._onClick.bind(this);
@@ -44,23 +44,16 @@ export default class App extends Component {
   }
 
   _onHover(info) {
-    if (this.state.expandedObjects) {
-      return;
-    }
-
-    // console.log('info', info);
-    const {x, y, object, objects} = info;
-    this.setState({x, y, hoveredObject: object, raw: objects});
+    const {x, y, object} = info;
+    this.setState({x, y, hoveredObject: object});
   }
 
   _onClick(info) {
     const {showCluster = true} = this.props;
-    const {x, y, objects, object} = info;
+    const {x, y, object} = info;
 
-    if (object && showCluster) {
-      this.setState({x, y, expandedObjects: objects || [object]});
-    } else {
-      this._closePopup();
+    if (showCluster && object && object.clusterEvents) {
+      this.setState({x, y, expandedObjects: object.clusterEvents});
     }
   }
 
@@ -71,25 +64,24 @@ export default class App extends Component {
   }
 
   _renderhoveredItems() {
-    const {x, y, hoveredObject, expandedObjects, raw} = this.state;
-
-
-    if (expandedObjects) {
-      return <DetailsPopover key={uniqueId()} x={x} y={y} events={expandedObjects} />
-    }
+    const {x, y, hoveredObject, expandedObjects} = this.state;
 
     if (!hoveredObject) {
       return null;
     }
-    return hoveredObject.cluster ?
-      raw && <HoverPopup key={hoveredObject.cluster_id} clusterInfo={hoveredObject} x={x} y={y} events={raw} />
-       : (
-      <div key={hoveredObject.id} className="tooltip" style={{left: x, top: y}}>
-        <h5>
-          {hoveredObject.id} : {hoveredObject.properties.tag.topic.join(', ')}
-        </h5>
-      </div>
-    );
+    const {clusterInfo, clusterEvents, event} = hoveredObject;
+
+    if(!event && !clusterInfo) {
+      return null;
+    }
+
+    return <HoverPopup
+      key={uniqueId('hover-')}
+      x={expandedObjects ? x - DETAILS_PANEL_WIDTH: x}
+      y={y}
+      clusterInfo={clusterInfo}
+      event={event}
+      events={clusterEvents} />
   }
 
   _renderLayers() {
@@ -128,23 +120,27 @@ export default class App extends Component {
     const {mapStyle = 'mapbox://styles/mapbox/dark-v9'} = this.props;
 
     return (
+      <>
+      {this.state.expandedObjects && <DetailsPanel events={this.state.expandedObjects} onClose={this._closePopup}/>}
       <DeckGL
         layers={this._renderLayers()}
         initialViewState={INITIAL_VIEW_STATE}
         controller={{dragRotate: false}}
-        onViewStateChange={this._closePopup}
         onClick={this._onClick}
       >
-        <StaticMap
-          key="deku-map"
-          reuseMaps
-          mapStyle={mapStyle}
-          preventStyleDiffing={true}
-          mapboxApiAccessToken={MAPBOX_TOKEN}
-        />
+        <MapView id="map" x={this.state.expandedObjects ? `${DETAILS_PANEL_WIDTH}px` : 0}>
+          <StaticMap
+            key="deku-map"
+            reuseMaps
+            mapStyle={mapStyle}
+            preventStyleDiffing={true}
+            mapboxApiAccessToken={MAPBOX_TOKEN}
+          />
+        </MapView>
 
         {this._renderhoveredItems}
       </DeckGL>
+      </>
     );
   }
 }
