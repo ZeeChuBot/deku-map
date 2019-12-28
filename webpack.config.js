@@ -4,7 +4,7 @@ const CONFIG = {
   mode: 'development',
   devtool: 'inline-source-map',
   entry: {
-    app: './app.js'
+    app: './App.tsx'
   },
   output: {
     library: 'App'

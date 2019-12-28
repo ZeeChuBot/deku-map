@@ -13,7 +13,7 @@ import {
 } from 'reactstrap';
 import TopicIcon from './TopicIcon';
 
-export const DETAILS_PANEL_WIDTH = '360';
+export const DETAILS_PANEL_WIDTH = 360;
 
 const TopicDetailList: React.FC<{ topic: EventTopic; events: Event[] }> = ({
   topic,

@@ -1,16 +1,12 @@
 import React, {Component} from 'react';
-import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import {IconLayer} from '@deck.gl/layers';
 import { MapView } from '@deck.gl/core';
 
-import IconClusterLayer from './icon-cluster-layer';
-import { loadEvents } from './api/EventApi';
-import HoverPopup from './components/HoverPopup';
+import IconClusterLayer from './IconClusterLayer';
+import { loadEvents } from '../api/EventApi';
+import HoverPopup from './HoverPopup';
 import { uniqueId } from 'lodash';
-import DetailsPanel, { DETAILS_PANEL_WIDTH } from './components/DetailsPanel';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -27,7 +23,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 /* eslint-disable react/no-deprecated */
-export default class App extends Component {
+export default class Map extends Component {
   constructor(props) {
     super(props);
 
@@ -35,7 +31,6 @@ export default class App extends Component {
       x: 0,
       y: 0,
       hoveredObject: null,
-      expandedObjects: null
     };
     this._onHover = this._onHover.bind(this);
     this._onClick = this._onClick.bind(this);
@@ -49,22 +44,24 @@ export default class App extends Component {
   }
 
   _onClick(info) {
-    const {showCluster = true} = this.props;
-    const {x, y, object} = info;
+    const {onClick} = this.props;
+    const {object} = info;
 
-    if (showCluster && object && object.clusterEvents) {
-      this.setState({x, y, expandedObjects: object.clusterEvents});
+    if (object && object.clusterEvents) {
+      onClick(object.clusterEvents);
+      this._closePopup();
     }
   }
 
   _closePopup() {
-    if (this.state.expandedObjects) {
-      this.setState({expandedObjects: null, hoveredObject: null});
+    if (this.state.hoveredObject) {
+      this.setState({hoveredObject: null});
     }
   }
 
   _renderhoveredItems() {
-    const {x, y, hoveredObject, expandedObjects} = this.state;
+    const { xOffset } = this.props;
+    const {x, y, hoveredObject} = this.state;
 
     if (!hoveredObject) {
       return null;
@@ -77,7 +74,7 @@ export default class App extends Component {
 
     return <HoverPopup
       key={uniqueId('hover-')}
-      x={expandedObjects ? x - DETAILS_PANEL_WIDTH: x}
+      x={x - xOffset}
       y={y}
       clusterInfo={clusterInfo}
       event={event}
@@ -89,7 +86,6 @@ export default class App extends Component {
       data = DATA_URL,
       iconMapping = 'data/deku-icon-mapping.json',
       iconAtlas = 'data/deku-icon-atlas.png',
-      showCluster = true
     } = this.props;
 
     const layerProps = {
@@ -102,33 +98,23 @@ export default class App extends Component {
       onHover: this._onHover
     };
 
-    const layer = showCluster
-      ? new IconClusterLayer({...layerProps, id: 'icon-cluster', sizeScale: 60})
-      : new IconLayer({
-          ...layerProps,
-          id: 'icon',
-          getIcon: d => 'marker',
-          sizeUnits: 'meters',
-          sizeScale: 2000,
-          sizeMinPixels: 6
-        });
+    const layer =
+      new IconClusterLayer({...layerProps, id: 'icon-cluster', sizeScale: 60})
 
     return [layer];
   }
 
   render() {
-    const {mapStyle = 'mapbox://styles/mapbox/light-v10'} = this.props;
+    const {mapStyle = 'mapbox://styles/mapbox/light-v10', xOffset} = this.props;
 
     return (
-      <>
-      {this.state.expandedObjects && <DetailsPanel events={this.state.expandedObjects} onClose={this._closePopup}/>}
       <DeckGL
         layers={this._renderLayers()}
         initialViewState={INITIAL_VIEW_STATE}
         controller={{dragRotate: false}}
         onClick={this._onClick}
       >
-        <MapView id="map" x={this.state.expandedObjects ? `${DETAILS_PANEL_WIDTH}px` : 0}>
+        <MapView id="map" x={xOffset} >
           <StaticMap
             key="deku-map"
             reuseMaps
@@ -140,11 +126,6 @@ export default class App extends Component {
 
         {this._renderhoveredItems}
       </DeckGL>
-      </>
-    );
+     );
   }
-}
-
-export function renderToDOM(container) {
-  render(<App />, container);
 }

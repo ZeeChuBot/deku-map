@@ -5,7 +5,6 @@ import { Card, CardHeader, CardBody, CardSubtitle } from 'reactstrap';
 import TopicIcon from './TopicIcon';
 
 //TODO: work in types for @types/supercluster
-
 type ClusterInfo = {
   cluster: boolean;
   cluster_id: number;
